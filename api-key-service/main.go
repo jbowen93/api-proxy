@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"database/sql"
@@ -9,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -71,6 +71,7 @@ func main() {
 	
 	// Auth endpoint for Envoy
 	r.GET("/auth", server.authenticate)
+	r.GET("/auth/*path", server.authenticate)
 
 	log.Println("API Key Service starting on :8080")
 	r.Run(":8080")
@@ -223,7 +224,7 @@ func (s *Server) authenticate(c *gin.Context) {
 }
 
 func (s *Server) checkRateLimit(keyID string, perMin, perDay int) bool {
-	ctx := c.Background()
+	ctx := context.Background()
 	now := time.Now()
 	
 	// Check per-minute limit

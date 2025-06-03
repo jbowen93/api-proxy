@@ -30,13 +30,20 @@ static_resources:
               domains: ["*"]
               routes:
               - match: { prefix: "/api/keys" }
-                route: { cluster: api_key_service }
+                route: 
+                  cluster: api_key_service
+                metadata:
+                  filter_metadata:
+                    envoy.filters.http.ext_authz:
+                      disabled: true
               - match: { prefix: "/" }
-                route: { cluster: backend_service }
+                route: 
+                  cluster: backend_service
           http_filters:
           - name: envoy.filters.http.ext_authz
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+              transport_api_version: V3
               http_service:
                 server_uri:
                   uri: http://api-key-service:8080
@@ -44,7 +51,10 @@ static_resources:
                   timeout: 1s
                 path_prefix: /auth
               failure_mode_allow: false
+              include_peer_certificate: true
           - name: envoy.filters.http.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
   clusters:
   - name: api_key_service
