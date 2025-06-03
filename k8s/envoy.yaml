@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: envoy
+  namespace: api-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: envoy
+  template:
+    metadata:
+      labels:
+        app: envoy
+    spec:
+      containers:
+      - name: envoy
+        image: envoyproxy/envoy:v1.28-latest
+        command: ["/usr/local/bin/envoy"]
+        args: ["-c", "/etc/envoy/envoy.yaml"]
+        ports:
+        - containerPort: 8000
+        - containerPort: 9901
+        volumeMounts:
+        - name: envoy-config
+          mountPath: /etc/envoy
+      volumes:
+      - name: envoy-config
+        configMap:
+          name: envoy-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: envoy
+  namespace: api-proxy
+spec:
+  type: LoadBalancer
+  selector:
+    app: envoy
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+  - name: admin
+    port: 9901
+    targetPort: 9901

@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing-sidecar
+  namespace: api-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: billing-sidecar
+  template:
+    metadata:
+      labels:
+        app: billing-sidecar
+    spec:
+      containers:
+      - name: billing-sidecar
+        image: billing-sidecar:latest
+        imagePullPolicy: Never
+        env:
+        - name: DATABASE_URL
+          value: "postgres://postgres:password@postgres:5432/apikeys?sslmode=disable"
+        - name: STRIPE_API_KEY
+          value: ""
+        - name: ENVOY_ALS_ADDRESS
+          value: "envoy:9901"
+        ports:
+        - containerPort: 8081
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: billing-sidecar
+  namespace: api-proxy
+spec:
+  selector:
+    app: billing-sidecar
+  ports:
+  - port: 8081
+    targetPort: 8081

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-service
+  namespace: api-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-service
+  template:
+    metadata:
+      labels:
+        app: backend-service
+    spec:
+      containers:
+      - name: backend-service
+        image: backend-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: api-proxy
+spec:
+  selector:
+    app: backend-service
+  ports:
+  - port: 3000
+    targetPort: 3000
