@@ -42,6 +42,13 @@ services:
     depends_on:
       - postgres
 
+  backend-service:
+    build:
+      context: ./backend-service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+
   envoy:
     image: envoyproxy/envoy:v1.28-latest
     ports:
@@ -52,6 +59,7 @@ services:
     command: /usr/local/bin/envoy -c /etc/envoy/envoy.yaml
     depends_on:
       - api-key-service
+      - backend-service
 
 volumes:
   postgres_data:
